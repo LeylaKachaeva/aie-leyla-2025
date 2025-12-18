@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from pandas.api import types as ptypes
 
+
+# ---------- dataclasses ----------
 
 @dataclass
 class ColumnSummary:
@@ -40,19 +42,12 @@ class DatasetSummary:
         }
 
 
+# ---------- core EDA ----------
+
 def summarize_dataset(
     df: pd.DataFrame,
     example_values_per_column: int = 3,
 ) -> DatasetSummary:
-    """
-    Полный обзор датасета по колонкам:
-    - количество строк/столбцов;
-    - типы;
-    - пропуски;
-    - количество уникальных;
-    - несколько примерных значений;
-    - базовые числовые статистики (для numeric).
-    """
     n_rows, n_cols = df.shape
     columns: List[ColumnSummary] = []
 
@@ -65,7 +60,6 @@ def summarize_dataset(
         missing_share = float(missing / n_rows) if n_rows > 0 else 0.0
         unique = int(s.nunique(dropna=True))
 
-        # Примерные значения выводим как строки
         examples = (
             s.dropna().astype(str).unique()[:example_values_per_column].tolist()
             if non_null > 0
@@ -105,9 +99,6 @@ def summarize_dataset(
 
 
 def missing_table(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Таблица пропусков по колонкам: count/share.
-    """
     if df.empty:
         return pd.DataFrame(columns=["missing_count", "missing_share"])
 
@@ -126,9 +117,6 @@ def missing_table(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def correlation_matrix(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Корреляция Пирсона для числовых колонок.
-    """
     numeric_df = df.select_dtypes(include="number")
     if numeric_df.empty:
         return pd.DataFrame()
@@ -140,10 +128,6 @@ def top_categories(
     max_columns: int = 5,
     top_k: int = 5,
 ) -> Dict[str, pd.DataFrame]:
-    """
-    Для категориальных/строковых колонок считает top-k значений.
-    Возвращает словарь: колонка -> DataFrame со столбцами value/count/share.
-    """
     result: Dict[str, pd.DataFrame] = {}
     candidate_cols: List[str] = []
 
@@ -170,14 +154,22 @@ def top_categories(
     return result
 
 
+# ---------- quality heuristics ----------
+
 def compute_quality_flags(summary: DatasetSummary, missing_df: pd.DataFrame) -> Dict[str, Any]:
     """
-    Простейшие эвристики «качества» данных:
+    Простые эвристики «качества» данных:
     - слишком много пропусков;
     - подозрительно мало строк;
-    и т.п.
+    - слишком много колонок;
+    - константные колонки;
+    - высокая кардинальность категориальных признаков;
+    - НОВОЕ: колонки с очень низкой вариативностью;
+    - НОВОЕ: колонки с критически большим числом пропусков.
     """
     flags: Dict[str, Any] = {}
+
+    # Базовые флаги по датасету
     flags["too_few_rows"] = summary.n_rows < 100
     flags["too_many_columns"] = summary.n_cols > 100
 
@@ -185,13 +177,56 @@ def compute_quality_flags(summary: DatasetSummary, missing_df: pd.DataFrame) -> 
     flags["max_missing_share"] = max_missing_share
     flags["too_many_missing"] = max_missing_share > 0.5
 
+    # Константные колонки
+    constant_columns: List[str] = [
+        col.name for col in summary.columns if col.unique == 1
+    ]
+    flags["has_constant_columns"] = len(constant_columns) > 0
+    flags["constant_columns"] = constant_columns
+
+    # Высокая кардинальность категориальных признаков
+    high_cardinality_threshold = 50
+    high_cardinality_columns: List[str] = []
+    for col in summary.columns:
+        if col.dtype == "object" and col.unique is not None:
+            if col.unique > high_cardinality_threshold:
+                high_cardinality_columns.append(col.name)
+
+    flags["has_high_cardinality_categoricals"] = len(high_cardinality_columns) > 0
+    flags["high_cardinality_columns"] = high_cardinality_columns
+
+    # НОВАЯ ЭВРИСТИКА 1: очень низкая вариативность числовых признаков
+    low_variance_columns: List[str] = []
+    for col in summary.columns:
+        if col.is_numeric and col.std is not None and col.std < 1e-6:
+            low_variance_columns.append(col.name)
+    flags["has_low_variance_columns"] = len(low_variance_columns) > 0
+    flags["low_variance_columns"] = low_variance_columns
+
+    # НОВАЯ ЭВРИСТИКА 2: критически много пропусков в отдельных колонках
+    critical_missing_threshold = 0.8
+    critical_missing_columns: List[str] = []
+    for col in summary.columns:
+        if col.missing_share is not None and col.missing_share > critical_missing_threshold:
+            critical_missing_columns.append(col.name)
+    flags["has_critical_missing_columns"] = len(critical_missing_columns) > 0
+    flags["critical_missing_columns"] = critical_missing_columns
+
     # Простейший «скор» качества
     score = 1.0
-    score -= max_missing_share  # чем больше пропусков, тем хуже
+    score -= max_missing_share
     if summary.n_rows < 100:
         score -= 0.2
     if summary.n_cols > 100:
         score -= 0.1
+    if flags["has_constant_columns"]:
+        score -= 0.1
+    if flags["has_high_cardinality_categoricals"]:
+        score -= 0.1
+    if flags["has_low_variance_columns"]:
+        score -= 0.05
+    if flags["has_critical_missing_columns"]:
+        score -= 0.05
 
     score = max(0.0, min(1.0, score))
     flags["quality_score"] = score
@@ -199,10 +234,9 @@ def compute_quality_flags(summary: DatasetSummary, missing_df: pd.DataFrame) -> 
     return flags
 
 
+# ---------- helpers for printing ----------
+
 def flatten_summary_for_print(summary: DatasetSummary) -> pd.DataFrame:
-    """
-    Превращает DatasetSummary в табличку для более удобного вывода.
-    """
     rows: List[Dict[str, Any]] = []
     for col in summary.columns:
         rows.append(
