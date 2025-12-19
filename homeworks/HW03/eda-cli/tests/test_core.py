@@ -51,7 +51,6 @@ def test_missing_table_and_quality_flags():
 def test_correlation_and_top_categories():
     df = _sample_df()
     corr = correlation_matrix(df)
-    # корреляция между age и height существует
     assert "age" in corr.columns or corr.empty is False
 
     top_cats = top_categories(df, max_columns=5, top_k=2)
@@ -75,3 +74,25 @@ def test_has_constant_columns_flag():
 
     assert flags["has_constant_columns"] is True
     assert "const_col" in flags["constant_columns"]
+
+
+# --- НОВЫЙ ТЕСТ (для HW03): проверяем две новые эвристики ---
+def test_compute_quality_flags_new_heuristics():
+    df = pd.DataFrame(
+        {
+            # std == 0 -> low variance
+            "const_low_var": [1, 1, 1, 1, 1],
+            # missing_share = 4/5 = 0.8 -> критически много пропусков
+            "critical_missing": [1, None, None, None, None],
+        }
+    )
+
+    summary = summarize_dataset(df)
+    missing_df = missing_table(df)
+    flags = compute_quality_flags(summary, missing_df)
+
+    assert flags["has_low_variance_columns"] is True
+    assert "const_low_var" in flags["low_variance_columns"]
+
+    assert flags["has_critical_missing_columns"] is True
+    assert "critical_missing" in flags["critical_missing_columns"]
