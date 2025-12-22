@@ -24,10 +24,37 @@ uv sync
 
 ## Запуск CLI
 
+## Запуск API (FastAPI + Uvicorn)
+
+Помимо CLI, в проекте есть HTTP API на FastAPI.  
+Приложение описано в модуле eda_cli.api:app.
+
+Из корня проекта (S03/HW04):
+
+```bash
+uv sync
+uv run uvicorn eda_cli.api:app –reload –port 
+```
+
+8000После запуска документация доступна по адресу http://127.0.0.1:8000/docs.
+
+### Эндпоинты API
+
+Базовые маршруты:
+
+- GET /health — проверка доступности сервиса (health-check).
+- POST /api/summary — принимает CSV-файл и возвращает краткий EDA‑summary по колонкам в формате JSON.
+
+Дополнительный эндпоинт (HW04):
+
+- POST /api/summary_extended — принимает CSV‑файл и, помимо базового summary,
+  возвращает дополнительные метрики качества данных (например, количество пропусков,
+  долю константных колонок и high-cardinality признаков).
+
 ### Краткий обзор
 
 ```bash
-uv run eda-cli overview data/example.csv
+uv run eda-cli overvюiew data/example.csv
 ```
 
 Параметры:
