@@ -1,0 +1,10 @@
+{
+  "best_model_name": "HistGB",
+  "refit_metric": "average_precision",
+  "test_metrics": {
+    "accuracy": 0.9792,
+    "f1": 0.7373737373737373,
+    "roc_auc": 0.8865106320394294,
+    "average_precision": 0.7827442487704314
+  }
+}
