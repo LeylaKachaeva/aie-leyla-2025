@@ -1,0 +1,29 @@
+{
+  "S07-hw-dataset-02.csv": {
+    "criterion": "silhouette (non-noise for DBSCAN)",
+    "best_score": 0.45739381231025134,
+    "algo": "dbscan",
+    "params": {
+      "eps": 1.0,
+      "min_samples": 20
+    }
+  },
+  "S07-hw-dataset-03.csv": {
+    "criterion": "silhouette (non-noise for DBSCAN)",
+    "best_score": 0.35884927942884737,
+    "algo": "dbscan",
+    "params": {
+      "eps": 0.3,
+      "min_samples": 20
+    }
+  },
+  "S07-hw-dataset-04.csv": {
+    "criterion": "silhouette (non-noise for DBSCAN)",
+    "best_score": 0.6321686092767955,
+    "algo": "dbscan",
+    "params": {
+      "eps": 1.5,
+      "min_samples": 20
+    }
+  }
+}
