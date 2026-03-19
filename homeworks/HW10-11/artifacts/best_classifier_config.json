@@ -1,0 +1,17 @@
+{
+    "experiment_name": "C4",
+    "best_val_accuracy": 91.3,
+    "test_accuracy": 90.22,
+    "model_type": "resnet18",
+    "dataset": "CIFAR10",
+    "num_classes": 10,
+    "seed": 42,
+    "hyperparameters": {
+        "batch_size": 32,
+        "learning_rate": 0.0001,
+        "epochs": 5,
+        "optimizer": "Adam",
+        "freeze_backbone": false,
+        "partial_finetune": true
+    }
+}

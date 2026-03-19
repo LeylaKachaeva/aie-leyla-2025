@@ -1,0 +1,7 @@
+experiment_id,task,dataset,seed,model_summary,optimizer,lr,epochs_trained,best_val_accuracy,test_accuracy,precision,recall,mean_iou,notes
+C1,classification,CIFAR10,42,simple_cnn,Adam,0.001,5.0,74.17,74.56,,,,Без аугментаций
+C2,classification,CIFAR10,42,simple_cnn,Adam,0.001,5.0,75.08,73.84,,,,"С аугментациями: HorizontalFlip, Rotation, ColorJitter, Affine"
+C3,classification,CIFAR10,42,resnet18,Adam,0.001,5.0,80.63,80.09,,,,"ResNet18 head-only, ImageNet pretrained"
+C4,classification,CIFAR10,42,resnet18,Adam,0.0001,5.0,91.3,90.22,,,,"ResNet18 partial fine-tune (layer4+fc), ImageNet pretrained"
+V1,segmentation,OxfordIIITPet,42,DeepLabV3_ResNet50,,,,,,,,0.6532,Без постобработки
+V2,segmentation,OxfordIIITPet,42,DeepLabV3_ResNet50,,,,,,,,0.6845,С постобработкой (удаление мелких компонент)
