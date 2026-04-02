@@ -1,10 +1,15 @@
 {
-  "model": "GRU",
-  "window_size": 24,
+  "model_type": "GRU",
+  "input_size": 1,
   "hidden_size": 64,
   "num_layers": 2,
+  "dropout": 0.2,
+  "window_size": 24,
+  "batch_size": 32,
   "learning_rate": 0.001,
-  "epochs": 50,
-  "best_val_mae": 2.6655771732330322,
+  "num_epochs": 50,
+  "best_val_mae": 3.8667995929718018,
+  "scaler": "StandardScaler",
+  "scaler_fitted_on": "train",
   "seed": 42
 }
