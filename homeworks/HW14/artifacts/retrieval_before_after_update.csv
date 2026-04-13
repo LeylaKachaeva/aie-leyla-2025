@@ -1,4 +1,4 @@
-query,before_retrieved_doc_ids,after_retrieved_doc_ids,changed
-Что такое RAG в контексте LLM?,"nlp_04, nlp_04, nlp_03, nlp_05","nlp_07, nlp_07, nlp_04, nlp_04",True
-Как работает RLHF?,"nlp_04, nlp_04, nlp_03, nlp_02","nlp_08, nlp_08, nlp_04, nlp_04",True
-Зачем нужен fine-tuning?,"nlp_06, nlp_06, nlp_03, nlp_02","nlp_09, nlp_07, nlp_06, nlp_06",True
+query,before_retrieved_sources,after_retrieved_sources,changed
+Что такое RAG в контексте LLM?,"nlp_04, nlp_04, nlp_03","nlp_07, nlp_07, nlp_04",True
+Как работает RLHF?,"nlp_04, nlp_04, nlp_03","nlp_08, nlp_08, nlp_04",True
+Зачем нужен fine-tuning?,"nlp_06, nlp_06, nlp_03","nlp_09, nlp_07, nlp_06",True
